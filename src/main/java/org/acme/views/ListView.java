@@ -14,7 +14,7 @@ import org.acme.data.service.CrmService;
 
 import java.util.Collections;
 
-@Route(value = "")
+@Route(value="", layout = MainLayout.class)
 @PageTitle("Contacts | Vaadin CRM")
 public class ListView extends VerticalLayout {
     private final CrmService service;
