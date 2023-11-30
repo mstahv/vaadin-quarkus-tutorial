@@ -50,13 +50,13 @@ mvn quarkus:dev
 
 ## The basic part
 
-Now you can continue most of the official tutorial pretty much as is all the way until the `Login And Authentication` part. Just note that instead of Spring Beans, use CDI beans and that there are various differences between Spring Data and Panache. Essentially if the tutorial says `Autowired`, you say `Inject`.
+Now you can continue most of the official tutorial pretty much as is all the way until the `Login And Authentication` part. Just note that instead of Spring Beans, use CDI beans and that there are various differences between Spring Data and [Panache](https://quarkus.io/guides/hibernate-orm-panache). Essentially if the tutorial says `Autowired`, you say `Inject`.
 
 Another gotcha is when building the Dashboard view. Adding Vaadin extension as we did in the Project Setup, only adds the core OSS dependencies. Add `com.vaadin:vaadin-charts-flow` dependency to you pom.xml (with version or with `com.vaadin:vaadin-bom` to dependency management part). Alternatively you can add the whole `com.vaadin:vaadin` package with all the things.
 
 ## Login and Authentication
 
-Naturally, Spring Security is not an option with Quarkus. In this example we'll use basic form based authentication and a "user" table in the database via JPA. This is bit more production ready setup than in the official Spring Boot version that just holds users in memory. Note that with Quarkus it is [rather trivial to set up a Keycloak with OIDC & Vaadin], so I suggest to look primarily to that for even trivial real world scenarios. But with this approach we are closer to the in memory form based login done in the official Vaadin tutorial.
+Naturally, Spring Security is not an option with Quarkus. In this example we'll use basic [form based authentication](https://quarkus.io/guides/security-authentication-mechanisms) and a ["user" table in the database via JPA](https://quarkus.io/guides/security-jpa). This is bit more production ready setup than in the official Spring Boot version that just holds users in memory. Note that with Quarkus it is [rather trivial to set up a Keycloak with OIDC & Vaadin], so I suggest to look primarily to that for even trivial real world scenarios. But with this approach we are closer to the in memory form based login done in the official Vaadin tutorial.
 
 Add extension/dependency:
 ```shell
@@ -257,7 +257,7 @@ public class WithDefaultPlaywrightTest {
 
 ## Deployment
 
-An essential step is to add a production profile to do optimized front-end build for the client bundle.
+An essential step is to [add a production profile](https://vaadin.com/docs/latest/production/production-build#enabling-production-builds) to do optimized front-end build for the client bundle.
 
 And make sure you use that when building your container image, e.g.
 ```shell 
