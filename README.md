@@ -37,11 +37,11 @@ Then copy still following things to your Quarkus project:
  * ListView.java
 
 And then add following configuration class to define the theme in use (this is done in Application.java in Spring version):
-
-    @Theme(value = "flowcrmtutorial")
-    public class VaadinAppConfig implements AppShellConfigurator {
-    }
-
+```java
+@Theme(value = "flowcrmtutorial")
+public class VaadinAppConfig implements AppShellConfigurator {
+}
+```
 Optionally you can remove the Quarkus generated example, the Greeting REST example etc. Now the project ought to be ready to start the actual tutorial. Spin up the app in development mode and in http://localhost:8080/ you should see an empty view to wait for your Vaadin code:
 
 ```shell
@@ -73,122 +73,129 @@ Configure form based security in application.properties like this:
 
 Add ViewAccesChecker (not added automatically like with Spring integration):
 
-    import com.vaadin.flow.server.ServiceInitEvent;
-    import com.vaadin.flow.server.auth.ViewAccessChecker;
-    import jakarta.enterprise.event.Observes;
-    
-    public class ViewAccessCheckerInit {
-    private final ViewAccessChecker viewAccessChecker;
-    
-        public ViewAccessCheckerInit() {
-            viewAccessChecker = new ViewAccessChecker();
-            viewAccessChecker.setLoginView("/login");
-        }
-    
-        public void serviceInit(@Observes ServiceInitEvent serviceInitEvent) {
-            serviceInitEvent.getSource().addUIInitListener(
-                    uiInitEvent -> uiInitEvent.getUI().addBeforeEnterListener(viewAccessChecker)
-            );
-        }
+```java
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.auth.ViewAccessChecker;
+import jakarta.enterprise.event.Observes;
+
+public class ViewAccessCheckerInit {
+private final ViewAccessChecker viewAccessChecker;
+
+    public ViewAccessCheckerInit() {
+        viewAccessChecker = new ViewAccessChecker();
+        viewAccessChecker.setLoginView("/login");
     }
 
+    public void serviceInit(@Observes ServiceInitEvent serviceInitEvent) {
+        serviceInitEvent.getSource().addUIInitListener(
+                uiInitEvent -> uiInitEvent.getUI().addBeforeEnterListener(viewAccessChecker)
+        );
+    }
+}
+```
 User entity (active record pattern) to store users in the DB.
 
-    package org.acme.data.entity;
-    
-    import jakarta.persistence.Entity;
-    import jakarta.persistence.Table;
-    
-    import io.quarkus.hibernate.orm.panache.PanacheEntity;
-    import io.quarkus.elytron.security.common.BcryptUtil;
-    import io.quarkus.security.jpa.Password;
-    import io.quarkus.security.jpa.Roles;
-    import io.quarkus.security.jpa.UserDefinition;
-    import io.quarkus.security.jpa.Username;
-    
-    @Entity
-    @Table(name = "test_user")
-    @UserDefinition
-    public class User extends PanacheEntity {
-    @Username
-    public String username;
-    @Password
-    public String password;
-    @Roles
-    public String role;
-    
-        /**
-         * Adds a new user to the database
-         * @param username the username
-         * @param password the unencrypted password (it will be encrypted with bcrypt)
-         * @param role the comma-separated roles
-         */
-        public static void add(String username, String password, String role) { 
-            User user = new User();
-            user.username = username;
-            user.password = BcryptUtil.bcryptHash(password);
-            user.role = role;
-            user.persist();
-        }
-    }
+```java
+package org.acme.data.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import io.quarkus.elytron.security.common.BcryptUtil;
+import io.quarkus.security.jpa.Password;
+import io.quarkus.security.jpa.Roles;
+import io.quarkus.security.jpa.UserDefinition;
+import io.quarkus.security.jpa.Username;
+
+@Entity
+@Table(name = "test_user")
+@UserDefinition
+public class User extends PanacheEntity {
+@Username
+public String username;
+@Password
+public String password;
+@Roles
+public String role;
+
+    /**
+     * Adds a new user to the database
+     * @param username the username
+     * @param password the unencrypted password (it will be encrypted with bcrypt)
+     * @param role the comma-separated roles
+     */
+    public static void add(String username, String password, String role) { 
+        User user = new User();
+        user.username = username;
+        user.password = BcryptUtil.bcryptHash(password);
+        user.role = role;
+        user.persist();
+    }
+}
+```
 And then fill in test users (or do similar with encrypted pws to import.sql):
 
-    package org.acme.data.service;
-    import io.quarkus.runtime.StartupEvent;
-    import jakarta.enterprise.event.Observes;
-    import jakarta.inject.Singleton;
-    import jakarta.transaction.Transactional;
-    import org.acme.data.entity.User;
-    
-    @Singleton
-    public class Startup {
-        @Transactional
-        public void loadUsers(@Observes StartupEvent evt) {
-            // reset and load all test users
-            User.deleteAll();
-            User.add("alice", "alice", "admin");
-            User.add("bob", "bob", "user");
-        }
+```java
+package org.acme.data.service;
+import io.quarkus.runtime.StartupEvent;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Singleton;
+import jakarta.transaction.Transactional;
+import org.acme.data.entity.User;
+
+@Singleton
+public class Startup {
+    @Transactional
+    public void loadUsers(@Observes StartupEvent evt) {
+        // reset and load all test users
+        User.deleteAll();
+        User.add("alice", "alice", "admin");
+        User.add("bob", "bob", "user");
     }
+}
+```
 
 Now the Quarkus specific basics are in and you can continue with following exceptions:
 
 In LoginView.java, configure the form post URL in use:
 
-    login.setAction("/j_security_check");
+```java
+login.setAction("/j_security_check");
+```
 
 SecurityService.java impl is slightly different to the Spring version:
 
-    import com.vaadin.flow.component.UI;
-    import com.vaadin.flow.server.VaadinResponse;
-    import io.quarkus.security.runtime.SecurityIdentityAssociation;
-    import jakarta.enterprise.context.RequestScoped;
-    import jakarta.servlet.http.Cookie;
-    
-    
-    @RequestScoped
-    public class SecurityService {
-    
-        private final SecurityIdentityAssociation sia;
-    
-        public SecurityService(SecurityIdentityAssociation sia) {
-            this.sia = sia;
-        }
-    
-        public String getAuthenticatedUser() {
-            return sia.getIdentity().getPrincipal().getName();
-        }
-    
-        public void logout() {
-            // Note, with websocket communication, this must be done
-            // with a RequestHandler
-            Cookie cookie = new Cookie("quarkus-credential", "; Max-Age=0;path=/");
-            VaadinResponse.getCurrent().addCookie(cookie);
-            UI.getCurrent().getPage().setLocation("/");
-        }
+```java
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.VaadinResponse;
+import io.quarkus.security.runtime.SecurityIdentityAssociation;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.servlet.http.Cookie;
+
+
+@RequestScoped
+public class SecurityService {
+
+    private final SecurityIdentityAssociation sia;
+
+    public SecurityService(SecurityIdentityAssociation sia) {
+        this.sia = sia;
     }
 
+    public String getAuthenticatedUser() {
+        return sia.getIdentity().getPrincipal().getName();
+    }
+
+    public void logout() {
+        // Note, with websocket communication, this must be done
+        // with a RequestHandler
+        Cookie cookie = new Cookie("quarkus-credential", "; Max-Age=0;path=/");
+        VaadinResponse.getCurrent().addCookie(cookie);
+        UI.getCurrent().getPage().setLocation("/");
+    }
+}
+```
 
 ## Installable PWA
 
@@ -203,49 +210,50 @@ I have to admit that I skipped this part in rush, but the principles ought to be
 Did this part in a bit different way. I used my (current) favorite for browser automation, Playwright. There is a handy community extension for Quarkus. Follow [these instructions](https://docs.quarkiverse.io/quarkus-playwright/dev/) and you are up and running in a minute.
 
 This is how I smoke tested that the app starts, one can log in and the ListView opens up properly (asserting the "Add Contact" button appears).
+```java
+import com.microsoft.playwright.BrowserContext;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Response;
+import io.quarkiverse.playwright.InjectPlaywright;
+import io.quarkiverse.playwright.WithPlaywright;
+import io.quarkus.test.common.http.TestHTTPResource;
+import io.quarkus.test.junit.QuarkusTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    import com.microsoft.playwright.BrowserContext;
-    import com.microsoft.playwright.Page;
-    import com.microsoft.playwright.Response;
-    import io.quarkiverse.playwright.InjectPlaywright;
-    import io.quarkiverse.playwright.WithPlaywright;
-    import io.quarkus.test.common.http.TestHTTPResource;
-    import io.quarkus.test.junit.QuarkusTest;
-    import org.junit.jupiter.api.Assertions;
-    import org.junit.jupiter.api.Test;
-    
-    import java.net.URL;
-    
-    import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-    
-    @QuarkusTest
-    @WithPlaywright
-    public class WithDefaultPlaywrightTest {
-    
-        @InjectPlaywright
-        BrowserContext context;
-    
-        @TestHTTPResource("/")
-        URL index;
-    
-        @Test
-        public void testIndex() {
-            final Page page = context.newPage();
-            Response response = page.navigate(index.toString());
-            Assertions.assertEquals("OK", response.statusText());
-    
-            page.waitForLoadState();
-    
-            page.getByLabel("Username").fill("bob");
-            page.locator("input[name='password']").fill("bob");
-            page.locator("vaadin-button").getByText("Log in").click();
-    
-            page.waitForLoadState();
-    
-            assertThat(page.getByText("Add contact")).isVisible();
-    
-        }
+import java.net.URL;
+
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+@QuarkusTest
+@WithPlaywright
+public class WithDefaultPlaywrightTest {
+
+    @InjectPlaywright
+    BrowserContext context;
+
+    @TestHTTPResource("/")
+    URL index;
+
+    @Test
+    public void testIndex() {
+        final Page page = context.newPage();
+        Response response = page.navigate(index.toString());
+        Assertions.assertEquals("OK", response.statusText());
+
+        page.waitForLoadState();
+
+        page.getByLabel("Username").fill("bob");
+        page.locator("input[name='password']").fill("bob");
+        page.locator("vaadin-button").getByText("Log in").click();
+
+        page.waitForLoadState();
+
+        assertThat(page.getByText("Add contact")).isVisible();
+
     }
+}
+```
 
 ## Deployment
 
