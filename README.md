@@ -56,7 +56,7 @@ Another gotcha is when building the Dashboard view. Adding Vaadin extension as w
 
 ## Login and Authentication
 
-Naturally, Spring Security is not an option with Quarkus. In this example we'll use basic [form based authentication](https://quarkus.io/guides/security-authentication-mechanisms) and a ["user" table in the database via JPA](https://quarkus.io/guides/security-jpa). This is bit more production ready setup than in the official Spring Boot version that just holds users in memory. Note that with Quarkus it is [rather trivial to set up a Keycloak with OIDC & Vaadin], so I suggest to look primarily to that for even trivial real world scenarios. But with this approach we are closer to the in memory form based login done in the official Vaadin tutorial.
+Naturally, Spring Security is not an option with Quarkus. In this example we'll use basic [form based authentication](https://quarkus.io/guides/security-authentication-mechanisms) and a ["user" table in the database via JPA](https://quarkus.io/guides/security-jpa). This is bit more production ready setup than in the official Spring Boot version that just holds users in memory. Note that with Quarkus it is [rather trivial to set up a Keycloak with OIDC & Vaadin](https://vaadin.com/blog/openid-connect-authentication-vaadin-an-integration-example-using-quarkus), so I suggest to look primarily to that for even trivial real world scenarios. But with this approach we are closer to the in memory form based login done in the official Vaadin tutorial.
 
 Add extension/dependency:
 ```shell
