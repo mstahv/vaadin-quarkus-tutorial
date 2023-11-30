@@ -9,6 +9,9 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import org.acme.data.entity.Contact;
 import org.acme.data.service.CrmService;
 
@@ -16,6 +19,7 @@ import java.util.Collections;
 
 @Route(value="", layout = MainLayout.class)
 @PageTitle("Contacts | Vaadin CRM")
+@PermitAll
 public class ListView extends VerticalLayout {
     private final CrmService service;
     Grid<Contact> grid = new Grid<>(Contact.class);
