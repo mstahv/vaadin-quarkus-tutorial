@@ -52,6 +52,8 @@ mvn quarkus:dev
 
 Now you can continue most of the official tutorial pretty much as is all the way until the `Login And Authentication` part. Just note that instead of Spring Beans, use CDI beans and that there are various differences between Spring Data and [Panache](https://quarkus.io/guides/hibernate-orm-panache). Essentially if the tutorial says `Autowired`, you say `Inject`.
 
+One difference in development is how the UI changes are picked up. Quarkus is excellent in quickly injecting the code changes into a development server running in development mode, but due to its architecture, with Quarkus, you need to *manually refresh the browser* to see code changes (Quarkus checks for new code changes on new request, instead injecting them eagerly).
+
 Another gotcha is when building the Dashboard view. Adding Vaadin extension as we did in the Project Setup, only adds the core OSS dependencies. Add `com.vaadin:vaadin-charts-flow` dependency to you pom.xml (with version or with `com.vaadin:vaadin-bom` to dependency management part). Alternatively you can add the whole `com.vaadin:vaadin` package with all the things.
 
 ## Login and Authentication
